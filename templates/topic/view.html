@@ -14,9 +14,10 @@
             tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
         });
     </script>
-<script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <script type="text/javascript" src="/static/js/widget/emmet.min.js"></script>
 <script type="text/javascript" src="/static/js/widget/jquery.textarea.min.js"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js"></script>
 <script type="text/javascript">
         jQuery(document).ready(function() {
             $('textarea.smart-code-support').tabby();
@@ -78,6 +79,46 @@
                 replyContent.focus();
                 replyContent.val(newContent);
             });
+            $("#favorite").click(function(){
+               var favoriteurl=$("#favorite").data("favoriteurl");
+               $.ajax({  
+                   type:"GET",  
+                   url:favoriteurl,
+                   timeout : 2000,
+                   dataType:"json",  
+                   success:function(data){  
+                       if (data.success){
+                            layer.msg(data.message);
+                            window.location.href="/login";
+                       }else{
+                            layer.msg(data.message);
+                     }
+                   },    
+                   error:function(jqXHR){  
+                       alert("发生错误:"+jqXHR.status);  
+                   }     
+               });  
+            });
+            $("#vote").click(function(){
+               var voteurl=$("#vote").data("voteurl");
+            $.ajax({  
+                type:"GET",  
+                url:voteurl,
+                timeout : 2000,
+                dataType:"json",  
+                success:function(data){  
+                    if (data.success){
+                         layer.msg(data.message);
+                         window.location.href="/login";
+                    }else{
+                         layer.msg(data.message);
+                  }
+                },    
+                error:function(jqXHR){  
+                    alert("发生错误:"+jqXHR.status);  
+                }     
+            });  
+            });
         });
     </script>
 {% endblock %}
@@ -119,14 +160,14 @@
             </div>
         </div>
     </div>
-    <div class="ui-content">{{ topic.content|markdown|content_process }}</div>
+    <div class="ui-content">{{ topic.content|markdown|content_process }}</div> 
     <div class="ui-footer">
-        <a href="/favorite?topic_id={{ topic.id }}" class="J_topicFavorite">加入收藏</a>
+        <div id="favorite" data-favoriteurl="/favorite?topic_id={{ topic.id }}" style="cursor:pointer;display:inline" class="J_topicFavorite">加入收藏</div>
         {#
         <a href="#" onclick="window.open('https://twitter.com/intent/tweet?hashtags={{ topic.node_slug }}&text={{ topic.title }}&url=http://{{ request.host }}{{ request.uri }}');">Tweet</a>
+        <a href="#" onclick="window.open('http://service.weibo.com/share/share.php?url=http://{{ request.host }}{{ request.uri }}&title={AI运维}%20-%20{{ topic.title }}', '_blank', 'width=550, height=370');">新浪微博</a>
         #}
-        <a href="#" onclick="window.open('http://service.weibo.com/share/share.php?url=http://{{ request.host }}{{ request.uri }}&title={叁年壹班}%20-%20{{ topic.title }}', '_blank', 'width=550, height=370');">新浪微博</a>
-        <a href="/vote?topic_id={{ topic.id }}" class="J_topicVote">喜欢</a>
+        <div id="vote" data-voteurl="/vote?topic_id={{ topic.id }}" style="cursor:pointer;display:inline" class="J_topicVote">喜欢</div>
         {% if current_user and current_user.uid == topic.author_id %}
         <a href="/t/edit/{{ topic.id }}" class="fr">编辑话题</a>
         {% endif %}
@@ -264,7 +305,7 @@
         <span class="title" style="color: #009a61">这是什么网站？<div class="fr"><a href="http://3n1b.com/t/1">了解更多</a></div></span>
     </div>
     <div class="ui-content">
-        叁年壹班是一个全国性的校园BBS社区，我们打破了传统校园BBS的封闭性，注册之后您不但可以关注您自己学校的最新动态还可以探索全国所有高校的同学热议的话题。
+AI系统运维不仅仅是简单的系统运维，他将整合AI于运维系统中，发挥更高效、更安全的作用。
         <p class="hor-tabs" style="margin-bottom: 0px">
             <a href="/register" style="color: #009a61">立即注册</a>
             <i></i>
@@ -284,7 +325,7 @@
 </div>
 <div class="sidebox container-box mt10 ">
     <div class="ui-header">
-        <span class="title">热门学校<div class="fr"><a href="/colleges">all</a></div></span>
+        <span class="title">热门技术<div class="fr"><a href="/colleges">all</a></div></span>
     </div>
     <div class="ui-content hot-nodes">
         {% for college in hot_colleges %}

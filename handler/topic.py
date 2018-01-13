@@ -157,6 +157,7 @@ class ViewHandler(BaseHandler):
             }
         template_variables["gen_random"] = gen_random
         template_variables["topic"] = self.topic_model.get_topic_by_topic_id(topic_id)
+        template_variables["topic"]["content"]=template_variables["topic"]["content"].replace("\r\n",2*"\r\n")
 
         # check reply count and cal current_page if `p` not given
         reply_num = 16
@@ -167,6 +168,11 @@ class ViewHandler(BaseHandler):
         template_variables["current_page"] = page
 
         template_variables["replies"] = self.reply_model.get_all_replies_by_topic_id(topic_id, current_page = page)
+        replies_list=[]
+        for reply_item in template_variables["replies"]["list"]:
+            reply_item["content"] = reply_item["content"].replace("\r\n",2*"\r\n")
+            replies_list.append(reply_item)
+        template_variables["replies"]["list"]=replies_list
         template_variables["active_page"] = "topic"
         template_variables["hot_nodes"] = self.node_model.get_all_hot_nodes()
         template_variables["hot_colleges"] = self.college_model.get_all_hot_colleges()  
@@ -330,6 +336,7 @@ class CreateHandler(BaseHandler):
             "last_touched": time.strftime('%Y-%m-%d %H:%M:%S'),
             "college_id": college["id"],
         }
+        print form.content.data
 
         reply_id = self.topic_model.add_new_topic(topic_info)
 
@@ -451,47 +458,52 @@ class VoteHandler(BaseHandler):
     def get(self, template_variables = {}):
         topic_id = int(self.get_argument("topic_id"))
         topic_info = self.topic_model.get_topic_by_topic_id(topic_id)
+        if self.current_user:
+            if not topic_info:
+                self.write(lib.jsonp.print_JSON({
+                    "success": 0,
+                    "message": "topic_not_exist",
+                }))
+                return
 
-        if not topic_info:
+            if self.current_user["uid"] == topic_info["author_id"]:
+                self.write(lib.jsonp.print_JSON({
+                    "success": 0,
+                    "message": "can_not_vote_your_topic",
+                }))
+                return
+
+            if self.vote_model.get_vote_by_topic_id_and_trigger_user_id(topic_id, self.current_user["uid"]):
+                self.write(lib.jsonp.print_JSON({
+                    "success": 0,
+                    "message": "already_voted",
+                }))
+                return
+
+            self.vote_model.add_new_vote({
+                "trigger_user_id": self.current_user["uid"],
+                "involved_type": 0, # 0: topic, 1: reply
+                "involved_user_id": topic_info["author_id"],
+                "involved_topic_id": topic_id,
+                "status": 0,
+                "occurrence_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+            })
+
             self.write(lib.jsonp.print_JSON({
                 "success": 0,
-                "message": "topic_not_exist",
+                "message": "thanks_for_your_vote",
             }))
-            return
 
-        if self.current_user["uid"] == topic_info["author_id"]:
+            # update reputation of topic author
+            topic_time_diff = datetime.datetime.now() - topic_info["created"]
+            reputation = topic_info["author_reputation"] or 0
+            reputation = reputation + 2 * math.log(self.current_user["reputation"] or 0 + topic_time_diff.days + 10, 10)
+            self.user_model.set_user_base_info_by_uid(topic_info["author_id"], {"reputation": reputation})
+        else:
             self.write(lib.jsonp.print_JSON({
-                "success": 0,
-                "message": "can_not_vote_your_topic",
-            }))
-            return
-
-        if self.vote_model.get_vote_by_topic_id_and_trigger_user_id(topic_id, self.current_user["uid"]):
-            self.write(lib.jsonp.print_JSON({
-                "success": 0,
-                "message": "already_voted",
-            }))
-            return
-
-        self.vote_model.add_new_vote({
-            "trigger_user_id": self.current_user["uid"],
-            "involved_type": 0, # 0: topic, 1: reply
-            "involved_user_id": topic_info["author_id"],
-            "involved_topic_id": topic_id,
-            "status": 0,
-            "occurrence_time": time.strftime('%Y-%m-%d %H:%M:%S'),
-        })
-
-        self.write(lib.jsonp.print_JSON({
-            "success": 1,
-            "message": "thanks_for_your_vote",
-        }))
-
-        # update reputation of topic author
-        topic_time_diff = datetime.datetime.now() - topic_info["created"]
-        reputation = topic_info["author_reputation"] or 0
-        reputation = reputation + 2 * math.log(self.current_user["reputation"] or 0 + topic_time_diff.days + 10, 10)
-        self.user_model.set_user_base_info_by_uid(topic_info["author_id"], {"reputation": reputation})
+                    "success": 1,
+                    "message": "请先登陆...",
+                }))            
 
 class UserTopicsHandler(BaseHandler):
     def get(self, user, template_variables = {}):
@@ -627,47 +639,53 @@ class ReplyEditHandler(BaseHandler):
 
 class FavoriteHandler(BaseHandler):
     def get(self, template_variables = {}):
-        topic_id = int(self.get_argument("topic_id"))
-        topic_info = self.topic_model.get_topic_by_topic_id(topic_id)
+        if self.current_user:
+            topic_id = int(self.get_argument("topic_id"))
+            topic_info = self.topic_model.get_topic_by_topic_id(topic_id)
 
-        if not topic_info:
+            if not topic_info:
+                self.write(lib.jsonp.print_JSON({
+                    "success": 0,
+                    "message": "topic_not_exist",
+                }))
+                return
+
+            if self.current_user["uid"] == topic_info["author_id"]:
+                self.write(lib.jsonp.print_JSON({
+                    "success": 0,
+                    "message": "can_not_favorite_your_topic",
+                }))
+                return
+
+            if self.favorite_model.get_favorite_by_topic_id_and_owner_user_id(topic_id, self.current_user["uid"]):
+                self.write(lib.jsonp.print_JSON({
+                    "success": 0,
+                    "message": "already_favorited",
+                }))
+                return
+
+            self.favorite_model.add_new_favorite({
+                "owner_user_id": self.current_user["uid"],
+                "involved_type": 0, # 0: topic, 1: reply
+                "involved_topic_id": topic_id,
+                "created": time.strftime('%Y-%m-%d %H:%M:%S'),
+            })
+
             self.write(lib.jsonp.print_JSON({
                 "success": 0,
-                "message": "topic_not_exist",
+                "message": "favorite_success",
             }))
-            return
 
-        if self.current_user["uid"] == topic_info["author_id"]:
+            # update reputation of topic author
+            topic_time_diff = datetime.datetime.now() - topic_info["created"]
+            reputation = topic_info["author_reputation"] or 0
+            reputation = reputation + 2 * math.log(self.current_user["reputation"] or 0 + topic_time_diff.days + 10, 10)
+            self.user_model.set_user_base_info_by_uid(topic_info["author_id"], {"reputation": reputation})
+        else:
             self.write(lib.jsonp.print_JSON({
-                "success": 0,
-                "message": "can_not_favorite_your_topic",
+                "success": 1,
+                "message": "请登陆...",
             }))
-            return
-
-        if self.favorite_model.get_favorite_by_topic_id_and_owner_user_id(topic_id, self.current_user["uid"]):
-            self.write(lib.jsonp.print_JSON({
-                "success": 0,
-                "message": "already_favorited",
-            }))
-            return
-
-        self.favorite_model.add_new_favorite({
-            "owner_user_id": self.current_user["uid"],
-            "involved_type": 0, # 0: topic, 1: reply
-            "involved_topic_id": topic_id,
-            "created": time.strftime('%Y-%m-%d %H:%M:%S'),
-        })
-
-        self.write(lib.jsonp.print_JSON({
-            "success": 1,
-            "message": "favorite_success",
-        }))
-
-        # update reputation of topic author
-        topic_time_diff = datetime.datetime.now() - topic_info["created"]
-        reputation = topic_info["author_reputation"] or 0
-        reputation = reputation + 2 * math.log(self.current_user["reputation"] or 0 + topic_time_diff.days + 10, 10)
-        self.user_model.set_user_base_info_by_uid(topic_info["author_id"], {"reputation": reputation})
 
 class MembersHandler(BaseHandler):
     def get(self, template_variables = {}):

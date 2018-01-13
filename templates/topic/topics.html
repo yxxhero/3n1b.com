@@ -4,7 +4,7 @@
 <div class="subnav">
     {% if user_info and college: %}
     {% set tab_bar = [
-        ('/', 'topic', '所有大学'),
+        ('/', 'topic', '所有技术'),
         ('/?tab=college', 'college', college.name),                   
         ('/?tab=interest', 'interest', '兴趣小组'),
         ('/?tab=follows', 'follows', '关注的人'),
@@ -12,7 +12,7 @@
     ] -%}
     {% else: %}
     {% set tab_bar = [
-        ('/', 'topic', '所有大学'),   
+        ('/', 'topic', '所有技术'),   
         ('/?tab=college', 'college', '我的大学'),            
         ('/?tab=interest', 'interest', '兴趣小组'),
         ('/?tab=follows', 'follows', '关注的人'),  
@@ -34,7 +34,7 @@
 </div>
 
 <div class="topics container-box deprecated-mt10">
-    {% if not college %}
+    {% if  user_info and not college %}
     <div class="alert alert-success" style="margin-bottom: 0px">
         <a class="close" data-dismiss="alert">×</a>
         <span>
@@ -180,11 +180,11 @@
         <span class="title" style="color: #009a61">这是什么网站？<div class="fr"><a href="http://3n1b.com/t/1">了解更多</a></div></span>
     </div>
     <div class="ui-content">
-        叁年壹班是一个全国性的校园BBS社区，我们打破了传统校园BBS的封闭性，注册之后您不但可以关注您自己学校的最新动态还可以探索全国所有高校的同学热议的话题。
+        AI系统运维不仅仅是简单的系统运维，他将整合AI于运维系统中，发挥更高效、更安全的作用。
         <p class="hor-tabs" style="margin-bottom: 0px">
             <a href="/register" style="color: #009a61">立即注册</a>
             <i></i>
-            <a href="http://3n1b.com/t/2" style="color: #009a61">如何发帖</a>
+            <a href="/t/create/?c=1001&n=qna" style="color: #009a61">如何发帖</a>
         </p>
     </div>
 </div>
@@ -227,17 +227,6 @@
         {% endfor %}
     </div>
 </div>
-<div class="sidebox container-box mt10 ">
-    <div class="ui-header">
-        <span class="title" style="color: #009a61">想获得最佳浏览体验？<div class="fr"><a href="http://www.google.cn/intl/zh-CN/chrome/browser/">快用Chrome吧！</a></div></span>
-    </div>
-    <div class="ui-content">
-        <a href="http://www.google.cn/intl/zh-CN/chrome/browser/">
-            <img src="http://pic.yupoo.com/gaolinjie_s/CFZgvVQa/medish.jpg" alt="" class="chrome" />
-        </a>
-    </div>
-</div>
-{# 暂时注释
 <div class="sidebox container-box mt10">
     <div class="ui-header">
         <span class="title">微信公共帐号</span>
@@ -277,7 +266,6 @@
         </p>
     </div>
 </div>
-#}
 
 {% if user_info.username == "gaolinjie" %}
 <div class="sidebox container-box mt10 community-status">
