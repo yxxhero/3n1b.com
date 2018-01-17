@@ -93,6 +93,11 @@
                         <li>
                             <a href="/logout">退出</a>
                         </li>
+                        {% if current_user.uid == 1%}
+                        <li>
+                            <a href="/admin">控制台</a>
+                        </li>
+                        {% endif %}
                         {% else %}
                         <li>
                             <a href="/login">登录</a>

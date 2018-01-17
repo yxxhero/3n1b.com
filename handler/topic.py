@@ -28,6 +28,7 @@ class IndexHandler(BaseHandler):
     def get(self, template_variables = {}):
         tab = self.get_argument('tab', "index")
         user_info = self.current_user
+        print user_info
         page = int(self.get_argument("p", "1"))
         template_variables["user_info"] = user_info
         user_college = self.college_model.get_college_by_college_id(1001)

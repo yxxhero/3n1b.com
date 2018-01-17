@@ -1,0 +1,97 @@
+<table id="demo" lay-filter="test"></table>
+<script>
+ var tableIns = table.render({
+    elem: '#demo'
+    ,url: '/demo/table/user'
+    ,page: true
+    ,cols: [[
+      {field: 'id', title: 'ID',  sort: true, fixed: 'left'}
+      ,{field: 'title', title: '标题'}
+      ,{field: 'auth_name', title: '作者'}
+      ,{field: 'hits', title: '阅读数', sort: true}
+      ,{field: 'reply_count', title: '回复数'} 
+      ,{field: 'created', title: '创建时间'}
+      ,{fixed: 'right',align:'center',width:180, toolbar: '#barDemo'}
+    ]]
+});
+</script>
+<script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script>
+function getCookie(cname)
+{
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for(var i=0; i<ca.length; i++) 
+  {
+    var c = ca[i].trim();
+    if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+  }
+  return "";
+};
+var xsrf_value=getCookie("_xsrf");
+table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+  var data = obj.data; //获得当前行数据
+  var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+  var tr = obj.tr; //获得当前行 tr 的DOM对象
+  if(layEvent === 'detail'){ //查看
+        data["method"]='detail';
+        data["_xsrf"]=xsrf_value;
+        console.log(data);
+        $.ajax( {  
+          url:'/api/tiecontrol',
+          data:data,  
+          type:'post',  
+          dataType:'json',
+          cache:false,  
+          success:function(data) {  
+            if(data.error ==0 ){  
+              layer.msg(data.msg);  
+            }else{  
+              layer.msg(data.msg);  
+            }  
+           },  
+           error : function() {  
+             layer.msg("异常！");  
+           }  
+        }); 
+        
+  } else if(layEvent === 'del'){ //删除
+    layer.confirm('真的删除么', function(index){
+      obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+      layer.close(index);
+      //向服务端发送删除指令
+        data["method"]='delete';
+        data["_xsrf"]=xsrf_value;
+        $.ajax( {  
+          url:'/api/tiecontrol',
+          data:data,  
+          type:'post',  
+          dataType:'json',
+          cache:false,  
+          success:function(data) {  
+            if(data.error ==0 ){  
+              layer.msg(data.msg, {icon: 1});  
+              tableIns.reload();
+            }else{  
+              layer.msg(data.msg,{icon: 2});  
+            }  
+           },  
+           error : function() {  
+             layer.msg("异常！");  
+           }  
+        }); 
+    });
+  } else if(layEvent === 'edit'){ //编辑
+    console.log("edit");
+    //同步更新缓存对应的值
+    obj.update({
+      username: '123'
+      ,title: 'xxx'
+    });
+  }
+});
+</script>

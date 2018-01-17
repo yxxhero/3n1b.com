@@ -1,0 +1,83 @@
+<table id="userdatademo" lay-filter="usertest"></table>
+<script>
+  table.render({
+    elem: '#userdatademo'
+    ,url: '/admin/usermanage'
+    ,page: true
+    ,cols: [[
+      {field: 'uid', title: 'ID',  sort: true, fixed: 'left'}
+      ,{field: 'username', title: '用户名'}
+      ,{field: 'email', title: 'Email'}
+      ,{field: 'created', title: '加入时间', sort: true}
+      ,{field: 'created', title: '创建时间'}
+      ,{fixed: 'right',align:'center',width:180, toolbar: '#userbarDemo'}
+    ]]
+});
+</script>
+<script type="text/html" id="userbarDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+</script>
+<script>
+function getCookie(cname)
+{
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for(var i=0; i<ca.length; i++) 
+  {
+    var c = ca[i].trim();
+    if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+  }
+  return "";
+};
+var xsrf_value=getCookie("_xsrf");
+table.on('tool(usertest)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+  var data = obj.data; //获得当前行数据
+  var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+  var tr = obj.tr; //获得当前行 tr 的DOM对象
+  if(layEvent === 'detail'){ //查看
+        data["method"]='detail';
+        data["_xsrf"]=xsrf_value;
+        console.log(data);
+        $.ajax( {  
+          url:'/api/usercontrol',
+          data:data,  
+          type:'post',  
+          dataType:'json',
+          cache:false,  
+          success:function(data) {  
+            if(data.error ==0 ){  
+              layer.msg(data.msg);  
+            }else{  
+              layer.msg(data.msg);  
+            }  
+           },  
+           error : function() {  
+             layer.msg("异常！");  
+           }  
+        }); 
+        
+  } else if(layEvent === 'edit'){
+        data["method"]='edit';
+        data["_xsrf"]=xsrf_value;
+        $.ajax( {  
+          url:'/api/usercontrol',
+          data:data,  
+          type:'post',  
+          dataType:'json',
+          cache:false,  
+          success:function(data) {  
+            if(data.error ==0 ){  
+              layer.msg(data.msg);  
+            }else{  
+              layer.msg(data.msg);  
+            }  
+           },  
+           error : function() {  
+             layer.msg("异常！");  
+           }  
+        });
+}
+}
+);
+</script>

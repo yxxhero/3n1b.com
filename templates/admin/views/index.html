@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8" />
+  <title>AIOPS后台管理系统</title>
+  <link rel="icon" type="image/png" href="/static/admin/assets/images/favicon.png" />
+  <link rel="stylesheet" href="/static/admin/assets/js/plugins/layui/css/layui.css" media="all" />
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_mpw4gvnu4xk9y66r.css" />
+  <link rel="stylesheet" href="/static/admin/assets/css/admin.css" />
+ </head>
+ <body>
+  <div class="layui-layout layui-layout-admin">
+   <div class="layui-header header">
+    <div class="layui-main">
+     <div class="logo">
+      <img src="/static/admin/assets/images/logo.png?v=80c71e8de2?v=80c71e8de2" alt="南台月订单系统" />
+     </div>
+     <ul class="layui-nav">
+      <li class="layui-nav-item"><a href="/"><i class="iconfont icon-shouye1"></i> 论坛首页</a></li>
+      <li class="layui-nav-item"><a href="javascript:;" onclick="toggleFullScreen()"><i class="iconfont icon-quanping"></i> 全屏显示</a></li>
+      <li class="layui-nav-item"><a href="javascript:;">{{ username }}</a>
+       <dl class="layui-nav-child">
+        <a>
+         <dd>
+          <a href="/setting/password"><i class="iconfont icon-password"></i> 修改密码</a>
+         </dd></a>
+       </dl></li>
+      <li class="layui-nav-item"><a href="/logout"><i class="iconfont icon-tuichu"></i> 退出</a></li>
+     </ul>
+    </div>
+   </div>
+   <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+     <ul class="layui-nav layui-nav-tree" lay-filter="navBar">
+      <li class="layui-nav-item layui-nav-itemed"><a href="javascript:;"><i class="iconfont icon-wodedingdan"></i> &nbsp;论坛管理</a>
+       <dl class="layui-nav-child">
+        <dd data-url="/admin/home" id="blogmanage" data-id="1" data-hash="order-list">
+         <a href="javascript:;"><i class="layui-icon"></i> <span>帖子管理</span></a>
+        </dd>
+        <dd data-url="/admin/userdata" data-id="2" data-hash="order-log">
+         <a href="javascript:;"><i class="layui-icon"></i> <span>用户管理</span></a>
+        </dd>
+       </dl></li>
+     </ul>
+    </div>
+   </div>
+   <div class="layui-body">
+    <div class="layui-tab layui-tab-brief" lay-allowclose="true" lay-filter="tabMain">
+     <ul class="layui-tab-title" id="tabBody">
+     </ul>
+      <div class="layui-tab-content" id="main">
+    </div>
+     </div>
+   </div>
+   <div class="layui-footer footer">
+    <div class="layui-main">
+     <p>AI论坛后台管理</p>
+    </div>
+   </div>
+  </div>
+  <div id="tpl" class="layui-hide"></div>
+  <script src="/static/admin/assets/js/plugins/layui/layui.js"></script>
+  <script src="/static/admin/assets/js/config.js"></script>
+ </body>
+</html>

@@ -20,6 +20,7 @@ import tornado.options
 import tornado.web
 
 import handler.base
+import handler.admin
 import handler.user
 import handler.topic
 import handler.page
@@ -69,6 +70,13 @@ class Application(tornado.web.Application):
             (r"/notifications", handler.notification.ListHandler),
             (r"/members", handler.topic.MembersHandler),
             (r"/nodes", handler.topic.NodesHandler),
+            (r"/admin", handler.admin.AdminIndexnHandler),
+            (r"/admin/home", handler.admin.AdminHomeHandler),
+            (r"/admin/usermanage", handler.admin.AdminUserDataHandler),
+            (r"/admin/userdata", handler.admin.AdminUserIndexHandler),
+            (r"/demo/table/user", handler.admin.AdminDataHandler),
+            (r"/api/tiecontrol", handler.admin.AdminDataHandler),
+            (r"/api/usercontrol", handler.admin.AdminUserDataHandler),
             (r"/colleges", handler.topic.CollegesHandler),
             (r"/setting", handler.user.SettingHandler),
             (r"/setting/avatar", handler.user.SettingAvatarHandler),
